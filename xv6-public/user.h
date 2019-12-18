@@ -23,6 +23,7 @@ int getpid(void);
 int getppid(void);
 int getChildren(int);
 int getCount(int);
+int changePriority(int);
 char* sbrk(int);
 int sleep(int);
 int uptime(void);

@@ -88,6 +88,12 @@ allocproc(void)
 found:
   p->state = EMBRYO;
   p->pid = nextpid++;
+  p->priority = 5;
+  p->calculatedPriority = 0;
+  for(struct proc *tmp = ptable.proc; tmp < &ptable.proc[NPROC]; tmp++)
+     if(tmp->state!=UNUSED && (tmp->calculatedPriority <= p->calculatedPriority || p->calculatedPriority == 0)){
+	p->calculatedPriority = tmp->calculatedPriority;
+     }
 
   release(&ptable.lock);
 
@@ -332,24 +338,28 @@ scheduler(void)
 
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
+    struct proc *chosenProcess = ptable.proc;
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
       if(p->state != RUNNABLE)
         continue;
-
+      if(p->calculatedPriority < chosenProcess->calculatedPriority)
+	chosenProcess = p;
+    }
+      if(chosenProcess->state == RUNNABLE){
       // Switch to chosen process.  It is the process's job
       // to release ptable.lock and then reacquire it
       // before jumping back to us.
-      c->proc = p;
-      switchuvm(p);
-      p->state = RUNNING;
+      c->proc = chosenProcess;
+      switchuvm(chosenProcess);
+      chosenProcess->state = RUNNING;
 
-      swtch(&(c->scheduler), p->context);
+      swtch(&(c->scheduler), chosenProcess->context);
       switchkvm();
 
       // Process is done running for now.
       // It should have changed its p->state before coming back.
       c->proc = 0;
-    }
+      }
     release(&ptable.lock);
 
   }
@@ -387,6 +397,7 @@ yield(void)
 {
   acquire(&ptable.lock);  //DOC: yieldlock
   myproc()->state = RUNNABLE;
+  myproc()->calculatedPriority += myproc()->priority;
   sched();
   release(&ptable.lock);
 }

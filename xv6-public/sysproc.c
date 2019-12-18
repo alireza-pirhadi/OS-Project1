@@ -67,6 +67,17 @@ sys_getCount(void)
 }
 
 int
+sys_changePriority(void)
+{
+  int new_priority;
+  argint(0, &new_priority);
+  if(new_priority < 1 || new_priority > 5)
+	return -1;
+  myproc()->priority = new_priority;
+  return 1;
+}
+
+int
 sys_sbrk(void)
 {
   int addr;
