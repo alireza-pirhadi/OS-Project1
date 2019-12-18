@@ -57,6 +57,16 @@ sys_getChildren(void)
 }
 
 int
+sys_getCount(void)
+{
+  int syscall_number;
+  argint(0, &syscall_number);
+  if(syscall_number < 1 || syscall_number > 24)
+	return -1;
+  return myproc()->number_syscall_invokes[syscall_number - 1];
+}
+
+int
 sys_sbrk(void)
 {
   int addr;

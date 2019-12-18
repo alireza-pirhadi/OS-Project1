@@ -22,6 +22,7 @@ int dup(int);
 int getpid(void);
 int getppid(void);
 int getChildren(int);
+int getCount(int);
 char* sbrk(int);
 int sleep(int);
 int uptime(void);
