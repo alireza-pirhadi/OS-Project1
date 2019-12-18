@@ -78,6 +78,17 @@ sys_changePriority(void)
 }
 
 int
+sys_changePolicy(void)
+{
+  int algorithm_number;
+  argint(0, &algorithm_number);
+  if(algorithm_number < 0 || algorithm_number > 2)
+	return -1;
+  changeAlgorithm(algorithm_number);
+  return 1;
+}
+
+int
 sys_sbrk(void)
 {
   int addr;

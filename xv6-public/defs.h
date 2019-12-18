@@ -121,6 +121,7 @@ int             wait(void);
 void            wakeup(void*);
 void            yield(void);
 int            getChildrenpids(int);
+void            changeAlgorithm(int);
 
 // swtch.S
 void            swtch(struct context**, struct context*);

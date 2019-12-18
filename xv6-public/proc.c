@@ -338,28 +338,49 @@ scheduler(void)
 
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
-    struct proc *chosenProcess = ptable.proc;
-    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-      if(p->state != RUNNABLE)
-        continue;
-      if(p->calculatedPriority < chosenProcess->calculatedPriority)
-	chosenProcess = p;
+    if(alg_number == 0 || alg_number == 1){
+	for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+          if(p->state != RUNNABLE)
+            continue;
+	  // Switch to chosen process.  It is the process's job
+          // to release ptable.lock and then reacquire it
+          // before jumping back to us.
+          c->proc = p;
+          switchuvm(p);
+          p->state = RUNNING;
+
+          swtch(&(c->scheduler), p->context);
+          switchkvm();
+
+          // Process is done running for now.
+          // It should have changed its p->state before coming back.
+          c->proc = 0;
+	}
     }
-      if(chosenProcess->state == RUNNABLE){
-      // Switch to chosen process.  It is the process's job
-      // to release ptable.lock and then reacquire it
-      // before jumping back to us.
-      c->proc = chosenProcess;
-      switchuvm(chosenProcess);
-      chosenProcess->state = RUNNING;
+    else if(alg_number == 2){
+        struct proc *chosenProcess = ptable.proc;
+        for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+          if(p->state != RUNNABLE)
+            continue;
+          if(p->calculatedPriority < chosenProcess->calculatedPriority)
+	    chosenProcess = p;
+        }
+          if(chosenProcess->state == RUNNABLE){
+          // Switch to chosen process.  It is the process's job
+          // to release ptable.lock and then reacquire it
+          // before jumping back to us.
+          c->proc = chosenProcess;
+          switchuvm(chosenProcess);
+          chosenProcess->state = RUNNING;
 
-      swtch(&(c->scheduler), chosenProcess->context);
-      switchkvm();
+          swtch(&(c->scheduler), chosenProcess->context);
+          switchkvm();
 
-      // Process is done running for now.
-      // It should have changed its p->state before coming back.
-      c->proc = 0;
-      }
+          // Process is done running for now.
+          // It should have changed its p->state before coming back.
+          c->proc = 0;
+          }
+    }
     release(&ptable.lock);
 
   }
@@ -554,4 +575,10 @@ getChildrenpids(int ppid)
 		childrens = (childrens * 100) + p->pid;
   release(&ptable.lock);
   return childrens;
+}
+
+void
+changeAlgorithm(int algorithm_number)
+{
+  alg_number = algorithm_number;
 }
