@@ -94,6 +94,8 @@ found:
      if(tmp->state!=UNUSED && (tmp->calculatedPriority <= p->calculatedPriority || p->calculatedPriority == 0)){
 	p->calculatedPriority = tmp->calculatedPriority;
      }
+  p->tick_num = 0;
+  p->time_variables.creationTime = ticks;
 
   release(&ptable.lock);
 
@@ -269,6 +271,7 @@ exit(void)
 
   // Jump into the scheduler, never to return.
   curproc->state = ZOMBIE;
+  curproc->time_variables.terminationTime = ticks;
   sched();
   panic("zombie exit");
 }
@@ -581,4 +584,40 @@ void
 changeAlgorithm(int algorithm_number)
 {
   alg_number = algorithm_number;
+}
+
+int increment_tick(void){
+  acquire(&ptable.lock);
+  myproc()->tick_num++;
+  release(&ptable.lock);
+  return myproc()->tick_num;
+}
+
+void update_timeVariables(void)
+{
+  acquire(&ptable.lock);
+  for(struct proc* p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+	if(p->state == SLEEPING)
+		p->time_variables.sleepingTime++;
+	if(p->state == RUNNING)
+		p->time_variables.runningTime++;
+	if(p->state == RUNNABLE)
+		p->time_variables.readyTime++;
+  }
+  release(&ptable.lock);
+}
+
+int getTimeVariables(struct timeVariables* time_variables)
+{
+  int pid = wait();
+  if(pid == (-1))
+	return -1;
+  acquire(&ptable.lock);
+  for(struct proc* p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+	if(p->pid == pid){
+		time_variables = &(p->time_variables);
+	}
+  }
+  release(&ptable.lock);
+  return pid;
 }

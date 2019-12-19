@@ -32,6 +32,14 @@ struct context {
   uint eip;
 };
 
+struct timeVariables {
+  int creationTime;
+  int terminationTime;
+  int sleepingTime;
+  int readyTime;
+  int runningTime;
+};
+
 enum procstate { UNUSED, EMBRYO, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };
 int alg_number;
 
@@ -40,6 +48,8 @@ struct proc {
   int number_syscall_invokes[24];
   int priority;
   unsigned long long calculatedPriority;
+  int tick_num;
+  struct timeVariables time_variables;
   uint sz;                     // Size of process memory (bytes)
   pde_t* pgdir;                // Page table
   char *kstack;                // Bottom of kernel stack for this process

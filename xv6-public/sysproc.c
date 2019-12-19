@@ -89,6 +89,15 @@ sys_changePolicy(void)
 }
 
 int
+sys_waitForChild(void)
+{
+  struct timeVariables *time_virables;
+  if(argptr (0 , (void*)&time_virables ,sizeof(*time_virables)) < 0)
+	return -1;
+  return getTimeVariables(time_virables);
+}
+
+int
 sys_sbrk(void)
 {
   int addr;

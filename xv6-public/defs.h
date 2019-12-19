@@ -9,6 +9,7 @@ struct spinlock;
 struct sleeplock;
 struct stat;
 struct superblock;
+struct timeVariables;
 
 // bio.c
 void            binit(void);
@@ -122,6 +123,9 @@ void            wakeup(void*);
 void            yield(void);
 int            getChildrenpids(int);
 void            changeAlgorithm(int);
+int 		increment_tick(void);
+void 		update_timeVariables(void);
+int 		getTimeVariables(struct timeVariables*);
 
 // swtch.S
 void            swtch(struct context**, struct context*);
