@@ -11,44 +11,43 @@ struct timeVariables {
 };
 
 int main(){
-  /*int i1 = fork();
-  int i2 = fork();
-  int i3 = fork();
-  int i4 = fork();
-  int i5 = fork();
-  int i6 = fork();
-  int i7 = fork();
-  int i8 = fork();
-  int i9 = fork();
-  int i10 = fork();
-
-  for(int i=0;i<1000;i++)
-  	printf(1, "|%d| : |%d|\n",getpid(),i);
-
-  if(i1 > 0 || i2 > 0 || i3 > 0 || i4 > 0 || i5 > 0 || i6 > 0 || i7 > 0 || i8 > 0 || i9 > 0 || i10 > 0){
-  struct timeVariables *t;
-  t = malloc(sizeof(struct timeVariables));
-  int childpid = waitForChild(t);
-  if(childpid != (-1)){
-	printf(1, "pid : %d, Turnaround time = %d, CBT = %d, Waiting time = %d\n", childpid, t->terminationTime - t->creationTime,t->runningTime,t->readyTime);
-  }
-  }
-  exit();*/
+  int a[10][4] = {0};
   changePolicy(1);
+  int pid = fork();
   for(int i=0;i<10;i++){
-	int pid = fork();
-	for(int i=0;i<1000;i++)
+	if(pid == 0){
+	    for(int i=0;i<1000;i++)
   		printf(1, "|%d| : |%d|\n",getpid(),i);
-	if(pid > 0){
-		struct timeVariables *t;
-  		t = malloc(sizeof(struct timeVariables));
-  		int childpid = waitForChild(t);
-		if(childpid != (-1)){
-		printf(1, "pid : %d, Turnaround time = %d, CBT = %d, Waiting time = %d\n", childpid, t->terminationTime - t->creationTime,t->runningTime,t->readyTime);
-		exit();
-		}
+	    exit();
+	}
+	if(pid > 0 && i != 9){
+		pid = fork();
 	}
   }
+   for(int i=0;i<10;i++){
+      struct timeVariables *t;
+      t = malloc(sizeof(struct timeVariables));
+      int childpid = waitForChild(t);
+      if(childpid != (-1)){
+	  a[i][0] = childpid;
+	  a[i][1] = t->terminationTime - t->creationTime;
+	  a[i][2] = t->runningTime;
+	  a[i][3] = t->readyTime;
+      }
+  }
+  int average_turnaroundTime = 0;
+  int average_cbt = 0;
+  int average_waitingTime = 0;
+  for(int i=0;i<10;i++){
+	average_turnaroundTime += a[i][1];
+	average_cbt += a[i][2];
+	average_waitingTime += a[i][3];
+	printf(1, "pid : %d, Turnaround time = %d, CBT = %d, Waiting time = %d\n", a[i][0], a[i][1],a[i][2],a[i][3]);
+  }
+  average_turnaroundTime /= 10;
+  average_cbt /= 10;
+  average_waitingTime /= 10;
+  printf(1, "\naverage Turnaround time = %d, average CBT = %d, average Waiting time = %d\n", average_turnaroundTime, average_cbt,average_waitingTime);
   exit();
   return 0;
 }

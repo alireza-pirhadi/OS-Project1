@@ -362,11 +362,14 @@ scheduler(void)
     }
     else if(alg_number == 2){
         struct proc *chosenProcess = ptable.proc;
+	int flag = 0;
         for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
           if(p->state != RUNNABLE)
             continue;
-          if(p->calculatedPriority < chosenProcess->calculatedPriority)
+          if(flag == 0 || p->calculatedPriority < chosenProcess->calculatedPriority){
 	    chosenProcess = p;
+	    flag = 1;
+	    }
         }
           if(chosenProcess->state == RUNNABLE){
           // Switch to chosen process.  It is the process's job
